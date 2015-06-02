@@ -203,8 +203,7 @@ Updater.prototype.verify = function(source) {
             }
         });
     } else {
-        // skip verify step, resolve immediately
-        defer.resolve(source);
+        return source;
     }
     
     return defer.promise;
