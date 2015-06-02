@@ -43,7 +43,8 @@ function Updater(options) {
     this.options = _.defaults(options || {}, {
         endpoint: 'http://torrentv.github.io/update.json',
         channel: 'beta',
-	    pubkey: VERIFY_PUBKEY
+	    pubkey: VERIFY_PUBKEY,
+        verify: true
     });
 
     var os = ""
@@ -180,26 +181,32 @@ Updater.prototype.verify = function(source) {
     var defer = Q.defer();
     var self = this;
 
-    var hash = crypto.createHash('SHA1'),
+    if (self.options.verify) {
+        var hash = crypto.createHash('SHA1'),
         verify = crypto.createVerify('RSA-SHA256');
 
-    var readStream = fs.createReadStream(source);
-    readStream.pipe(hash);
-    readStream.pipe(verify);
-    readStream.on('end', function() {
-        hash.end();
-        verify.end();
-        var hashResult = hash.read().toString('hex')
-        var resultFromSign = verify.verify(self.options.pubkey, self.updateData.signature+"", 'base64')
-        if(self.updateData.checksum !== hashResult ||
-            resultFromSign == false
-        ) {
-            defer.reject('invalid hash or signature');
-            self.emit("error","invalid hash or signature")
-        } else {
-            defer.resolve(source);
-        }
-    });
+        var readStream = fs.createReadStream(source);
+        readStream.pipe(hash);
+        readStream.pipe(verify);
+        readStream.on('end', function() {
+            hash.end();
+            verify.end();
+            var hashResult = hash.read().toString('hex')
+            var resultFromSign = verify.verify(self.options.pubkey, self.updateData.signature+"", 'base64')
+            if(self.updateData.checksum !== hashResult ||
+                resultFromSign == false
+            ) {
+                defer.reject('invalid hash or signature');
+                self.emit("error","invalid hash or signature")
+            } else {
+                defer.resolve(source);
+            }
+        });
+    } else {
+        // skip verify step, resolve immediately
+        defer.resolve(source);
+    }
+    
     return defer.promise;
 };
 
