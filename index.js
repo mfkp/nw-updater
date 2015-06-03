@@ -11,7 +11,6 @@ var request = require('request'),
     crypto = require('crypto'),
     zip = require('adm-zip'),
     spawn = require('child_process').spawn;
-    // torrentStream = require('torrent-stream');
 
 var Decompress = require('decompress')
 var events = require('events')
