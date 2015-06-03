@@ -15,6 +15,10 @@ var AdmZip = require('adm-zip');
 var events = require('events');
 var util = require('util');
 
+needle.defaults({
+    follow_max: 5
+});
+
 util.inherits(Updater, events.EventEmitter);
 
 var CHANNELS = ['stable', 'beta', 'nightly'],
