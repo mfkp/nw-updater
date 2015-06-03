@@ -1,6 +1,7 @@
 'use strict';
 
 var request = require('request'),
+    needle = require('needle'),
     semver = require('semver'),
     fs = require('fs'),
     url = require('url'),
@@ -108,9 +109,11 @@ Updater.prototype.check = function() {
         return defer.promise;
     }
 
-    request(this.options.endpoint, {json:true}, function(err, res, data) {
+    needle.get(this.options.endpoint, function(error, response) {
+        console.log(response.body);
+        var data = response.body;
 
-        if(err || !data) {
+        if (err || !data) {
             defer.reject(err);
         } else {
             defer.resolve({"data": data, "os":self.os, "arch": this.arch, "this": self});
