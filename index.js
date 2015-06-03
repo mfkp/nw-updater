@@ -1,7 +1,6 @@
 'use strict';
 
-var request = require('request'),
-    needle = require('needle'),
+var needle = require('needle'),
     semver = require('semver'),
     fs = require('fs'),
     url = require('url'),
@@ -43,7 +42,7 @@ function Updater(options) {
     this.options = _.defaults(options || {}, {
         endpoint: 'http://torrentv.github.io/update.json',
         channel: 'beta',
-	    pubkey: VERIFY_PUBKEY,
+        pubkey: VERIFY_PUBKEY,
         verify: true
     });
 
@@ -110,13 +109,12 @@ Updater.prototype.check = function() {
     }
 
     needle.get(this.options.endpoint, function(err, response) {
-        console.log(response.body);
         var data = response.body;
 
         if (err || !data) {
             defer.reject(err);
         } else {
-            defer.resolve({"data": data, "os":self.os, "arch": this.arch, "this": self});
+            defer.resolve({"data": data, "os": self.os, "arch": self.arch, "this": self});
         }
     });
 
@@ -173,7 +171,7 @@ Updater.prototype.download = function(source, output) {
     //     break;
     case 'http:':
     case 'https:':
-        self._download(request(source), output, defer);
+        self._download(needle.get(source), output, defer);
         break;
     }
     return defer.promise;
@@ -384,9 +382,9 @@ Updater.prototype.install = function(downloadPath) {
 };
 
 Updater.prototype._installed = function() {
-	var defer = Q.defer();
-	this.emit('installed');
-	return defer.promise;
+    var defer = Q.defer();
+    this.emit('installed');
+    return defer.promise;
 };
 
 Updater.prototype.displayNotification = function() {
@@ -431,7 +429,7 @@ Updater.prototype.update = function() {
         return this.download(this.updateData.updateUrl, outputFile)
             .then(forcedBind(this.verify, this))
             .then(forcedBind(this.install, this))
-	        .then(forcedBind(this._installed, this));
+            .then(forcedBind(this._installed, this));
     }else{
         var self = this;
         return this.check().then(function(updateAvailable){
@@ -440,7 +438,7 @@ Updater.prototype.update = function() {
                     .then(forcedBind(self.verify, self))
                     .then(forcedBind(self.install, self))
                     .then(forcedBind(self.displayNotification))
-	                .then(forcedBind(self._installed, self));
+                    .then(forcedBind(self._installed, self));
             }else{
                 return false
             }
