@@ -12,18 +12,16 @@ var needle = require('needle'),
     zip = require('adm-zip'),
     spawn = require('child_process').spawn;
 
-var Decompress = require('decompress')
-var events = require('events')
-var util = require('util')
+var AdmZip = require('adm-zip');
+var events = require('events');
+var util = require('util');
 
-util.inherits(Updater, events.EventEmitter)
-
-;
+util.inherits(Updater, events.EventEmitter);
 
 var CHANNELS = ['stable', 'beta', 'nightly'],
-    FILENAME = 'package.nw.new'
+    FILENAME = 'package.nw.new';
 
-var VERIFY_PUBKEY = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAjjfrud4fMoIc9QSwdO0snzi5yd4bwtJYCSOA6GCtjplYPwBTNzMeOI7CFOue\nNObSNf1mQCepIVKFK+/WYNtN7z6pSVbSjU7lIT6yh+ifcZTI8ezurIrtfstFjW6LCZv4XzvZ\nK6l9zgT7Z8PfIQ7NdE2cTfJRUk7HLOsWZTiu6N63OJD6Xrt9SymLzdFnsWqCauDB2HRUXZUL\nb90JtHokEiOHCW+KiKPIFLZpBB0bobFXCHGAsZjQ+ZZfKINRoeGqzHCqUnzQFAUSsEV1tTOb\nMzlBLOT4a6T7eBLKhDGkH99cdZFXPZPVqvEzuNDMOsb5osk6FdQZtmSl6QRUslb0fQIDAQAB\n-----END RSA PUBLIC KEY-----\n"
+var VERIFY_PUBKEY = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAjjfrud4fMoIc9QSwdO0snzi5yd4bwtJYCSOA6GCtjplYPwBTNzMeOI7CFOue\nNObSNf1mQCepIVKFK+/WYNtN7z6pSVbSjU7lIT6yh+ifcZTI8ezurIrtfstFjW6LCZv4XzvZ\nK6l9zgT7Z8PfIQ7NdE2cTfJRUk7HLOsWZTiu6N63OJD6Xrt9SymLzdFnsWqCauDB2HRUXZUL\nb90JtHokEiOHCW+KiKPIFLZpBB0bobFXCHGAsZjQ+ZZfKINRoeGqzHCqUnzQFAUSsEV1tTOb\nMzlBLOT4a6T7eBLKhDGkH99cdZFXPZPVqvEzuNDMOsb5osk6FdQZtmSl6QRUslb0fQIDAQAB\n-----END RSA PUBLIC KEY-----\n";
 
 function forcedBind(func, thisVar) {
     return function() {
@@ -259,28 +257,24 @@ function installWindows2(downloadPath, updateData) {
         installDir = path.join(outputDir, 'app');
     var defer = Q.defer();
 
-
-    var decompress = Decompress({mode: '644'})
-        .src(downloadPath)
-        .dest(installDir)
-        .use(Decompress.zip())
-
-    //var pack = new zip(downloadPath);
-    decompress.run(
-    //pack.extractAllToAsync(installDir, true, function(err) {
-    function(err) {
-        if(err) {
-            defer.reject(err);
-        } else {
-            fs.unlink(downloadPath, function(err) {
-                if(err) {
-                    defer.reject(err);
-                } else {
-                    defer.resolve();
-                }
-            });
-        }
-    });
+    try {
+        var zip = new AdmZip(downloadPath);
+        zip.extractAllToAsync(installDir, true, function(err) {
+            if (err) {
+                defer.reject(err);
+            } else {
+                fs.unlink(downloadPath, function(err) {
+                    if (err) {
+                        defer.reject(err);
+                    } else {
+                        defer.resolve();
+                    }
+                });
+            }
+        });
+    } catch (e) {
+        defer.reject(e);
+    }
 
     return defer.promise;
 }
@@ -335,30 +329,27 @@ function installOSX(downloadPath, updateData) {
     var defer = Q.defer();
 
     rm(installDir, function(err) {
-        if(err) {
+        if (err) {
             defer.reject(err);
         } else {
-            //var pack = new zip(downloadPath);
-            var decompress = Decompress({mode: '744'})
-                .src(downloadPath)
-                .dest(installDir)
-                .use(Decompress.zip())
-
-
-            //pack.extractAllToAsync(installDir, true, function(err) {
-            decompress.run(function(err){
-                if(err) {
-                    defer.reject(err);
-                } else {
-                    fs.unlink(downloadPath, function(err) {
-                        if(err) {
-                            defer.reject(err);
-                        } else {
-                            defer.resolve();
-                        }
-                    });
-                }
-            });
+            try {
+                var zip = new AdmZip(downloadPath);
+                zip.extractAllToAsync(installDir, true, function(err) {
+                    if (err) {
+                        defer.reject(err);
+                    } else {
+                        fs.unlink(downloadPath, function(err) {
+                            if (err) {
+                                defer.reject(err);
+                            } else {
+                                defer.resolve();
+                            }
+                        });
+                    }
+                });
+            } catch (e) {
+                defer.reject(e);
+            }
         }
     });
 
