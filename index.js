@@ -9,7 +9,6 @@ var needle = require('needle'),
     rm = require('rimraf'),
     path = require('path'),
     crypto = require('crypto'),
-    zip = require('adm-zip'),
     spawn = require('child_process').spawn;
 
 var AdmZip = require('adm-zip');
