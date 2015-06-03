@@ -109,7 +109,7 @@ Updater.prototype.check = function() {
         return defer.promise;
     }
 
-    needle.get(this.options.endpoint, function(error, response) {
+    needle.get(this.options.endpoint, function(err, response) {
         console.log(response.body);
         var data = response.body;
 
