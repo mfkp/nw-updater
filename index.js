@@ -10,8 +10,8 @@ var request = require('request'),
     path = require('path'),
     crypto = require('crypto'),
     zip = require('adm-zip'),
-    spawn = require('child_process').spawn,
-    torrentStream = require('torrent-stream');
+    spawn = require('child_process').spawn;
+    // torrentStream = require('torrent-stream');
 
 var Decompress = require('decompress')
 var events = require('events')
@@ -162,13 +162,13 @@ Updater.prototype.download = function(source, output) {
     var defer = Q.defer();
     var self = this;
     switch (url.parse(source).protocol) {
-    case 'magnet:':
-        var engine = torrentStream(source);
-        engine.on('ready', function() {
-            var file = engine.files.pop();
-            self._download(file.createReadStream(), output, defer);
-        });
-        break;
+    // case 'magnet:':
+    //     var engine = torrentStream(source);
+    //     engine.on('ready', function() {
+    //         var file = engine.files.pop();
+    //         self._download(file.createReadStream(), output, defer);
+    //     });
+    //     break;
     case 'http:':
     case 'https:':
         self._download(request(source), output, defer);
